@@ -1,0 +1,24 @@
+---
+- name: "install nginx --> replacing a file index.nginx-debian.html --> restart nginx"
+  hosts: nginx-web
+  become: true
+
+  tasks:
+  - name: "1/4 apt update"
+    apt:
+      update_cache: yes
+
+  - name: "2/4 install nginx"
+    apt:
+      name: nginx
+      state: latest
+
+  - name: "3/4 replacing a file 'index.nginx-debian.html' for nginx-web"
+    copy:
+      src: /root/index.nginx-debian.html
+      dest: /var/www/html/index.nginx-debian.html
+
+  - name: "4/4 restart Nginx"
+    systemd:
+      name: nginx
+      state: restarted

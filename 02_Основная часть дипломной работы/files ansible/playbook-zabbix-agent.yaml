@@ -1,0 +1,36 @@
+---
+- name: "download and install zabbix-agent"
+  hosts: all
+  become: true
+
+  tasks:
+  - name: "1/7 apt update"
+    apt:
+      upgrade: yes
+      update_cache: yes
+
+  - name: "2/7 download zabbix-agent"
+    get_url:
+      url: https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-5+debian12_all.deb
+      dest: "/home/tverdyakov"
+
+  - name: "3/7 dpkg -i zabbix-agent"
+    apt:
+      deb: /home/tverdyakov/zabbix-release_6.0-5+debian12_all.deb
+
+  - name: "4/7 apt update"
+    apt:
+      update_cache: yes
+
+  - name: "5/7 apt install zabbix-agent"
+    apt:
+      name: zabbix-agent
+
+  - name: "6/7 ip replacement in zabbix_agentd.conf"
+    shell: |
+      sed -i 's/Server=127.0.0.1/Server=192.168.30.4/g' /etc/zabbix/zabbix_agentd.conf
+
+  - name: "7/7 restart and enable zabbix-agent"
+    shell: |
+      systemctl restart zabbix-agent
+      systemctl enable zabbix-agent

@@ -1,0 +1,32 @@
+---
+- name: "download and install kibana"
+  hosts: kibana
+  become: true
+
+  tasks:
+  - name: "1/5 install gnupg and apt-transport-https"
+    apt:
+      name:
+      - gnupg
+      - apt-transport-https
+      state: present
+
+  - name: "2/5 download kibana"
+    get_url:
+      url: https://mirror.yandex.ru/mirrors/elastic/7/pool/main/k/kibana/kibana-7.17.9-amd64.deb
+      dest: "/home/tverdyakov"
+
+  - name: "3/5 dpkg -i kibana"
+    apt:
+      deb: /home/tverdyakov/kibana-7.17.9-amd64.deb
+
+  - name: "4/5 kibana configuration 'kibana.yml'"
+    copy:
+      src: /root/kibana.yml
+      dest: /etc/kibana/kibana.yml
+
+  - name: "5/5 enable and start kibana"
+    shell: |
+      systemctl daemon-reload
+      systemctl enable kibana.service
+      systemctl start kibana.service

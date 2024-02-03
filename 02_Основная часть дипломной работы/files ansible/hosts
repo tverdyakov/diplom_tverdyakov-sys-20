@@ -1,0 +1,24 @@
+[nginx-web]
+nginx-web-1
+nginx-web-2
+
+[zabbix]
+zabbix
+
+[elasticsearch]
+elasticsearch
+
+[kibana]
+kibana
+
+[nginx-web:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q tverdyakov@51.250.45.187"'
+
+[zabbix:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q tverdyakov@51.250.45.187"'
+
+[elasticsearch:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q tverdyakov@51.250.45.187"'
+
+[kibana:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q tverdyakov@51.250.45.187"'

@@ -1,0 +1,32 @@
+---
+- name: "download and install elasticsearch"
+  hosts: elasticsearch
+  become: true
+
+  tasks:
+  - name: "1/5 install gnupg and apt-transport-https"
+    apt:
+      name:
+      - gnupg
+      - apt-transport-https
+      state: present
+
+  - name: "2/5 download elasticsearch"
+    get_url:
+      url: https://mirror.yandex.ru/mirrors/elastic/7/pool/main/e/elasticsearch/elasticsearch-7.17.9-amd64.deb
+      dest: "/home/tverdyakov"
+
+  - name: "3/5 dpkg -i elasticsearch"
+    apt:
+      deb: /home/tverdyakov/elasticsearch-7.17.9-amd64.deb
+
+  - name: "4/5 elasticsearch configuration 'elasticsearch.yml'"
+    copy:
+      src: /root/elasticsearch.yml
+      dest: /etc/elasticsearch/elasticsearch.yml
+
+  - name: "5/5 enable and start elasticsearch"
+    shell: |
+      systemctl daemon-reload
+      systemctl enable elasticsearch.service
+      systemctl start elasticsearch.service

@@ -1,0 +1,33 @@
+---
+- name: "download and install filebeat for nginx-web-1"
+  hosts: nginx-web-1
+  become: true
+
+  tasks:
+  - name: "1/5 install gnupg and apt-transport-https"
+    apt:
+      name:
+      - gnupg
+      - apt-transport-https
+      state: present
+
+  - name: "2/5 download filebeat"
+    get_url:
+      url: https://mirror.yandex.ru/mirrors/elastic/7/pool/main/f/filebeat/filebeat-7.17.9-amd64.deb
+      dest: "/home/tverdyakov"
+
+  - name: "3/5 dpkg -i filebeat"
+    apt:
+      deb: /home/tverdyakov/filebeat-7.17.9-amd64.deb
+
+  - name: "4/5 copy config file for filebeat"
+    copy:
+      src: /root/filebeat.yml
+      dest: /etc/filebeat/
+
+  - name: "5/5 enable and start filebeat"
+    shell: |
+      systemctl deamon-reload
+      systemctl enable filebeat.service
+      systemctl start filebeat.service
+

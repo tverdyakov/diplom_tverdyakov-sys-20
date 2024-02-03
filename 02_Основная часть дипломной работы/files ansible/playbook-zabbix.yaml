@@ -1,0 +1,50 @@
+---
+- name: "download and install zabbix"
+  hosts: zabbix
+  become: true
+
+  tasks:
+  - name: "1/8 apt update"
+    apt:
+      update_cache: yes
+
+  - name: "2/8 install  postgresql"
+    apt:
+      name: postgresql
+      state: latest
+
+  - name: "3/8 download zabbix"
+    get_url:
+      url: https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-5+debian12_all.deb
+      dest: "/home/tverdyakov"
+
+  - name: "4/8 dpkg -i zabbix"
+    apt:
+      deb: /home/tverdyakov/zabbix-release_6.0-5+debian12_all.deb
+
+  - name: "5/8 apt update"
+    apt:
+      update_cache: yes
+
+  - name: "6/8 install zabbix-server-pgsql, zabbix-frontend-php, php8.2-pgsql, zabbix-apache-conf, zabbix-sql-scripts, zabbix-agent"
+    apt:
+      name:
+      - zabbix-server-pgsql
+      - zabbix-frontend-php
+      - php8.2-pgsql
+      - zabbix-apache-conf
+      - zabbix-sql-scripts
+      - zabbix-agent
+      state: latest
+
+  - name: "7/8 create user and database zabbix, import initial schema and data, configure DBPassword"
+    shell: |
+      su - postgres -c 'psql --command "CREATE USER zabbix WITH PASSWORD '\'123456789\'';"'
+      su - postgres -c 'psql --command "CREATE DATABASE zabbix OWNER zabbix;"'
+      zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | sudo -u zabbix psql zabbix
+      sed -i 's/# DBPassword=/DBPassword=123456789/g' /etc/zabbix/zabbix_server.conf
+
+  - name: "8/8 restart and enable zabbix-server and apache"
+    shell: |
+      systemctl restart zabbix-server apache2
+      systemctl enable zabbix-server apache2
